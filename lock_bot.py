@@ -5,6 +5,7 @@
 import json
 import os
 import sys
+import urllib.error
 import urllib.request
 from datetime import datetime, time
 from zoneinfo import ZoneInfo
@@ -12,20 +13,24 @@ from zoneinfo import ZoneInfo
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 API = f"https://api.telegram.org/bot{TOKEN}/"
 
-# نوع الصلاحية -> الحقول في تليجرام
+# اسم الصلاحية في config.json  ->  اسمها في تليجرام
 TYPES = {
-    "messages": ["can_send_messages"],
-    "photos": ["can_send_photos"],
-    "videos": ["can_send_videos"],
-    "documents": ["can_send_documents"],
-    "audios": ["can_send_audios"],
-    "voice": ["can_send_voice_notes", "can_send_video_notes"],
-    "polls": ["can_send_polls"],
-    "other": ["can_send_other_messages"],
+    "messages": "can_send_messages",
+    "photos": "can_send_photos",
+    "videos": "can_send_videos",
+    "documents": "can_send_documents",
+    "audios": "can_send_audios",
+    "voice": "can_send_voice_notes",
+    "video_notes": "can_send_video_notes",
+    "polls": "can_send_polls",
+    "stickers": "can_send_other_messages",
+    "link_previews": "can_add_web_page_previews",
+    "reactions": "can_react_to_messages",
 }
-OTHER_FIELDS = [
-    "can_add_web_page_previews", "can_change_info", "can_invite_users",
-    "can_pin_messages", "can_manage_topics",
+# صلاحيات مش بنلمسها، بنسيبها زي ما هي في الجروب
+KEEP_FIELDS = [
+    "can_change_info", "can_invite_users", "can_pin_messages",
+    "can_manage_topics", "can_edit_tag",
 ]
 
 
@@ -57,32 +62,52 @@ def in_lock_window(lock: time, unlock: time, now: time) -> bool:
     return now >= lock or now < unlock  # الفترة بتعدي نص الليل
 
 
+def build_permissions(perms, cfg, locked_now):
+    """بيحسب الصلاحيات المطلوبة:
+    always_open  -> مفتوحة دايمًا
+    always_closed -> مقفولة دايمًا
+    lock          -> بتتقفل وقت القفل وتتفتح وقت الفتح
+    أي حاجة تانية -> بتفضل زي ما هي في الجروب"""
+    always_open = set(cfg.get("always_open", []))
+    always_closed = set(cfg.get("always_closed", []))
+    lock = set(cfg.get("lock", []))
+
+    desired = {}
+    for key, field in TYPES.items():
+        if key in always_closed:
+            desired[field] = False
+        elif key in always_open:
+            desired[field] = True
+        elif key in lock:
+            desired[field] = not locked_now
+        else:
+            desired[field] = bool(perms.get(field))
+
+    new = dict(desired)
+    for f in KEEP_FIELDS:
+        new[f] = bool(perms.get(f))
+    return desired, new
+
+
 def process_chat(chat_id, cfg, locked_now):
     chat = api("getChat", chat_id=chat_id)
     perms = chat.get("permissions", {})
-    lock_keys = [k for k in cfg["lock"] if k in TYPES]
 
-    current_locked = any(
-        perms.get(f) is False for k in lock_keys for f in TYPES[k]
-    )
-    if current_locked == locked_now:
-        print(f"[{chat_id}] already {'locked' if locked_now else 'open'}, nothing to do")
+    lock_fields = [TYPES[k] for k in cfg.get("lock", []) if k in TYPES]
+    current_locked = any(not perms.get(f) for f in lock_fields)
+
+    desired, new = build_permissions(perms, cfg, locked_now)
+    changes = [f for f, v in desired.items() if bool(perms.get(f)) != v]
+    if not changes:
+        print(f"[{chat_id}] already correct, nothing to do")
         return
-
-    new = {}
-    for key, fields in TYPES.items():
-        value = not (locked_now and key in lock_keys)
-        for f in fields:
-            new[f] = value
-    for f in OTHER_FIELDS:
-        if f in perms:
-            new[f] = perms[f]
 
     api("setChatPermissions", chat_id=chat_id, permissions=new,
         use_independent_chat_permissions=True)
-    print(f"[{chat_id}] -> {'LOCKED' if locked_now else 'OPENED'}")
+    print(f"[{chat_id}] updated: {', '.join(changes)}")
 
-    if cfg.get("announce", True):
+    # بنبعت رسالة بس لما القفل أو الفتح يتغيّر فعلًا
+    if cfg.get("announce", True) and current_locked != locked_now:
         text = cfg["lock_message"] if locked_now else cfg["unlock_message"]
         api("sendMessage", chat_id=chat_id, text=text)
 
