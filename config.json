@@ -1,7 +1,7 @@
 {
   "chats": [-1003708163214],
-  "lock_time": "02:07",
-  "unlock_time": "02:25",
+  "lock_time": "14:30",
+  "unlock_time": "14:40",
   "timezone": "Africa/Cairo",
   "lock": ["messages"],
   "announce": true,
