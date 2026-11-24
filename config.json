@@ -1,12 +1,12 @@
 {
   "chats": [-1003708163214],
-  "lock_time": "15:40",
-  "unlock_time": "15:55",
+  "lock_time": "23:30",
+  "unlock_time": "01:00",
   "timezone": "Africa/Cairo",
   "lock": ["messages"],
   "always_open": ["photos", "videos", "documents", "reactions"],
   "always_closed": ["stickers", "audios", "voice", "video_notes", "link_previews", "polls"],
   "announce": true,
-  "lock_message": "⚠️⚠️ركز\n🔒 تم قفل الرسايل.\n⚠️ الصور و الملفات مفتوحه طول الوقت علشان تبعت سؤال مش علشان ترغي.\n⚠️ممنوع الخاص نهائي علي الكل\nصلي علي النبي ❤️\nو بالتوفيق ❤️\n\nتحياتي Doom",
+  "lock_message": "⚠️⚠️ركز\n🔒 تم قفل الرسايل هيفتح الساعه 1بليل.\n⚠️ الصور و الملفات مفتوحه طول الوقت علشان تبعت سؤال مش علشان ترغي.\n⚠️ممنوع الخاص نهائي علي الكل\nصلي علي النبي ❤️\nو بالتوفيق ❤️\n\nتحياتي Doom",
   "unlock_message": "⚠️⚠️⚠️ركز\n🔓 الرسايل اتفتحت\nصلي علي النبي❤️\n⚠️ مش عايز كلام خارج نطاق الدراسه\nو بالتوفيق❤️\n\nتحياتي Doom"
 }
