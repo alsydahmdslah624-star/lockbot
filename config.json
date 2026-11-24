@@ -1,7 +1,7 @@
 {
   "chats": [-1003708163214],
-  "lock_time": "23:30",
-  "unlock_time": "01:00",
+  "lock_time": "01:00",
+  "unlock_time": "23:30",
   "timezone": "Africa/Cairo",
   "lock": ["messages"],
   "always_open": ["photos", "videos", "documents", "reactions"],
