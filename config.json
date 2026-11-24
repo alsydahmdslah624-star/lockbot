@@ -1,0 +1,10 @@
+{
+  "chats": [-1001234567890],
+  "lock_time": "22:00",
+  "unlock_time": "07:00",
+  "timezone": "Africa/Cairo",
+  "lock": ["messages"],
+  "announce": true,
+  "lock_message": "🔒 تم قفل الرسايل لحد الصبح.",
+  "unlock_message": "🔓 الرسايل اتفتحت."
+}
