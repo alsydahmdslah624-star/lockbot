@@ -1,0 +1,26 @@
+name: group-lock
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "run = تشغيل عادي | find = اعرض آي دي الجروبات"
+        default: "run"
+        type: choice
+        options: [run, find]
+
+concurrency:
+  group: group-lock
+  cancel-in-progress: false
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: python3 lock_bot.py ${{ github.event.inputs.mode }}
